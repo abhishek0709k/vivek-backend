@@ -4,11 +4,16 @@
   "description": "a backend with vivek singh",
   "main": "index.js",
   "scripts": {
-   "start" : "nodemon index.js"
+    "start": "nodemon ./src/index.js"
   },
   "author": "Vivek singh",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1"
   }
 }
