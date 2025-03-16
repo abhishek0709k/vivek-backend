@@ -4,12 +4,11 @@
   "description": "a backend with vivek singh",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+   "start" : "nodemon index.js"
   },
   "author": "Vivek singh",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^3.1.9",
-    "prettier": "^3.5.3"
+    "nodemon": "^3.1.9"
   }
 }
