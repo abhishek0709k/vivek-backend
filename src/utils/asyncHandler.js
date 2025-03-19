@@ -9,16 +9,16 @@
 
 // second approach
 const asyncHandler = (func) => {
-  async () => {
+  return async (req , res , next) => {
     try {
-        await func(req , res , next)
+         await func(req , res , next)
     } catch (error) {
       return res.status(error.code || 500).json({
-        "Error": error.message,
+        "Error" : error,
         success: false,
       });
     }
-  };
+  }
 };
 
 module.exports = asyncHandler;

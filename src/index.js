@@ -1,7 +1,7 @@
 require('dotenv').config()
-const express = require('express');
-const app = express();
+const app = require('./app.js')
 const MongoDBconnection = require("./db/connection.js")
+const port = process.env.PORT
 // iife --> first approach
 // ( async ()=>{
 //     try {
@@ -14,4 +14,12 @@ const MongoDBconnection = require("./db/connection.js")
 //     }
 // } )()
 
-MongoDBconnection()
+MongoDBconnection().then(()=>{
+    console.log("MongoDB connected")
+}).catch(()=>{
+    console.log("Connection Error")
+})
+
+app.listen(port , ()=>{
+    console.log(`Server is running of PORT : ${port}`)
+})
