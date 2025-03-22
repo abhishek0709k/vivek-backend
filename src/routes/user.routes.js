@@ -1,6 +1,7 @@
 const Router = require('express')
-const {handleRegisterUser} = require('../controllers/user.controllers.js')
+const { handleRegisterUser, handleLoginUser, handleLogoutUser } = require('../controllers/user.controllers.js')
 const multerFileUpload = require('../middlewares/multer.js')
+const authMiddleware = require('../middlewares/auth.js')
 
 const router = Router()
 // adding middlesware multerFileUpload 
@@ -15,4 +16,6 @@ router.post('/register', multerFileUpload.fields([
     }
  ]), handleRegisterUser)
 
+router.post('/login', handleLoginUser)
+router.post('/logout', authMiddleware, handleLogoutUser)
 module.exports = router

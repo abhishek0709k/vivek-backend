@@ -28,7 +28,6 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
-      unique: true,
     },
     avatar: {
       type: String,
@@ -52,14 +51,14 @@ const userSchema = new Schema(
 );
 
 userSchema.pre("save", async function (next) {
-  if (!userSchema.isModified("password")) return next();
+  if (!this.isModified("password")) return next();
   const salt = 10;
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 userSchema.methods.isCorrectPassword = async function (password) {
-  await bcrypt.compare(password, this.password);
+  return await bcrypt.compare(password, this.password);
 };
 
 userSchema.methods.generateAccessToken = function () {
@@ -75,19 +74,19 @@ userSchema.methods.generateAccessToken = function () {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
   );
-  return { Token: token };
+  return  token ;
 };
-userSchema.methods.generateRefreshToken = function () {
+userSchema.methods.generateRefreshToken = async function () {
   const token = jwt.sign(
     {
       _id: this._id,
     },
     process.env.REFRESH_TOEKN_SECRET,
     {
-      expiresIn: REFRESH_TOEKN_EXPIRY,
+      expiresIn: process.env.REFRESH_TOEKN_EXPIRY,
     }
   );
-  return { Token: token };
+  return token ;
 };
 
 const User = model("User", userSchema);

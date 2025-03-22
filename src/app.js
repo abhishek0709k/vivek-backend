@@ -1,6 +1,7 @@
 const express = require("express")
 const cors = require('cors')
 const app = express()
+const cookieParser = require('cookie-parser')
 const userRouter = require('./routes/user.routes.js')
 
 // Middlewares
@@ -11,8 +12,9 @@ app.use(cors({
     credentials : true
 }))
 app.use(express.static('../public'))
+app.use(cookieParser())
 
-// calling routers
+// routers
 app.use("/api/v1/users" , userRouter)
 
 module.exports = app;

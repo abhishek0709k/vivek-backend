@@ -3,19 +3,13 @@ class APIError extends Error{
         message = "Something went wrong",
         statusCode,
         errors = [],
-        stack = ""
     ){
         super(message)
-        this.statusCode = statusCode
-        this.errors = errors
-        this.success = false
+        // super(error)
+        this.statusCode = statusCode,
+        this.errors = errors.length ? errors : [message]
+        // this.success = false
         this.data = null
-
-        if(stack){
-            this.stack = stack
-        } else{
-            Error.captureStackTrace(this , this.constructor)
-        }
     }
 }
 
