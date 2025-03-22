@@ -8,7 +8,6 @@ const authMiddleware = async (req , res , next) => {
         return res.status(404).json(new APIError("You are not logged In" , 404))
     }
     const decodedToken = jwt.verify(token , process.env.ACCESS_TOKEN_SECRET);
-    console.log(decodedToken)
     const id = decodedToken._id;
     const user = await User.findById(id);
 
