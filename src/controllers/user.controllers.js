@@ -3,6 +3,7 @@ const APIError = require("../utils/apiError.js");
 const User = require("../models/user.models.js");
 const uploadOnCloudinary = require("../utils/cloudinary.js");
 const APIResponse = require("../utils/apiResponse.js");
+const jwt = require('jsonwebtoken')
 
 const handleRegisterUser = asyncHandler(async (req, res) => {
   const { username, fullname, email, password } = req.body;
@@ -50,7 +51,7 @@ const handleRegisterUser = asyncHandler(async (req, res) => {
 
 const handleLoginUser = asyncHandler( async (req , res)=>{
   const { email , password } = req.body;
-  if(!email|| !password) return res.status(400).json(new APIError("All fields are required" , 400));
+  if(!email || !password) return res.status(400).json(new APIError("All fields are required" , 400));
 
   const dbUser = await User.findOne({ email });
   if(!dbUser) return res.status(400).json(new APIError("User not found. Please Sign up" , 400));
@@ -71,14 +72,18 @@ const handleLoginUser = asyncHandler( async (req , res)=>{
     httpOnly : true,
     secure : true
   }
-  res.status(200)
+  return res.status(200)
   .cookie("Access_Token" , AccessToken , options)
   .cookie("Refresh_Token" , RefreshToken , options)
-  .json("logged In")
+  .json(new APIResponse(200 , {
+    "Access Token" : AccessToken,
+    "Refresh Token" : RefreshToken,
+  }, 
+  "User Logged In successfully"))
 })
 
 const handleLogoutUser = asyncHandler( async (req , res)=>{
-  const user = await User.findByIdAndUpdate(req.user._id , {
+  await User.findByIdAndUpdate(req.user._id , {
     $set : {
       refreshToken : undefined
     }
@@ -87,10 +92,49 @@ const handleLogoutUser = asyncHandler( async (req , res)=>{
     httpOnly : true,
     secure : true
   }
-  res.status(200)
+  return res.status(200)
   .clearCookie("Access_Token" , options)
   .clearCookie("Refresh_Token" , options)
   .json(new APIResponse(200 , {} , "Logout successfully"))
 })
 
-module.exports = { handleRegisterUser , handleLoginUser , handleLogoutUser };
+const handleRefreshAccessToken = asyncHandler( async (req , res)=>{
+  const incomingRefreshToken = req.cookies?.Refresh_Token || req.body.refreshToken
+  if(!incomingRefreshToken) {
+    return res.status(400).json(new APIError("You are logged Out. Token is required.", 400))
+  }
+  const decodedToken = jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET)
+  const user = await User.findById(decodedToken._id)
+
+  if(!user) {
+    return res.status(400).json(new APIError("User not found", 400));
+  }
+
+  const existedRefreshToken = await user.refreshToken;
+
+  if(incomingRefreshToken !== existedRefreshToken){
+    return res.status(400).json(new APIError("Invalid refresh Token" , 400))
+  }
+
+  const newAccessToken = await user.generateAccessToken();
+  const newRefreshToken = await user.generateRefreshToken();
+  
+  user.refreshToken = newRefreshToken;
+  await user.save({ validateBeforeSave : false })
+  
+  const options = {
+    httpOnly : true,
+    secure : true
+  }
+
+  return res.status(200)
+  .cookie("Access_Token" , newAccessToken , options)
+  .cookie("Refresh_Token" , newRefreshToken , options)
+  .json(new APIResponse(200 , {
+    "Access Token" : newAccessToken,
+    "Refresh Token" : newRefreshToken,
+  }, 
+  "Access Token created successfully"))
+})
+
+module.exports = { handleRegisterUser , handleLoginUser , handleLogoutUser , handleRefreshAccessToken };
