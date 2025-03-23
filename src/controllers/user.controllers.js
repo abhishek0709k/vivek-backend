@@ -4,6 +4,7 @@ const User = require("../models/user.models.js");
 const uploadOnCloudinary = require("../utils/cloudinary.js");
 const APIResponse = require("../utils/apiResponse.js");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 const handleRegisterUser = asyncHandler(async (req, res) => {
   const { username, fullname, email, password } = req.body;
@@ -194,7 +195,8 @@ const handleChangeUserPassword = asyncHandler(async (req, res) => {
 });
 
 const handleGetCurrentUser = asyncHandler(async (req, res) => {
-  return res.status(200).json(new APIResponse(200, req.user, "Current User"));
+  const user = await User.findById(req.user._id).select("-password -refreshToken")
+  return res.status(200).json(new APIResponse(200, user, "Current User"));
 });
 
 const handleChangeUserDetails = asyncHandler(async (req, res) => {
@@ -212,7 +214,7 @@ const handleChangeUserDetails = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password");
+  ).select("-password -refreshToken");
 
   return res.status(200).json(new APIResponse(200 , user , "Details Updated Successfully"))
 });
@@ -224,7 +226,7 @@ const handleUpdatedAvatar = asyncHandler( async (req , res)=>{
 
   const accessToken = req.cookies?.Access_Token || req.body?.AccessToken;
   const decodedToken = jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET)
-  const user = await User.findById(decodedToken._id).select("-password")
+  const user = await User.findById(decodedToken._id).select("-password -refreshToken")
 
   user.avatar = avatarFileData.url;
   await user.save({ validateBeforeSave : false })
@@ -247,6 +249,120 @@ const handleUpdatedCoverImage = asyncHandler( async (req , res)=>{
   return res.status(200).json(new APIResponse(200 , user , "Cover Image updated Successfully "))
 })
 
+const handleGetUserProfileDetails = asyncHandler( async (req , res)=>{
+  const {username} = req.params
+  if(!username){
+    return res.status(400).json(new APIError("Username is required" , 400))
+  }
+  const channel = await User.aggregate([ 
+    {
+      $match : {
+        username : username?.toLowerCase()
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers"
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo"
+      }
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers"
+        },
+        subscribedToCount: {
+          $size: "$subscribedTo"
+        },
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        fullname: 1,
+        username: 1,
+        email: 1,
+        avatar: 1,
+        coverImage: 1,
+        subscribersCount: 1,
+        subscribedToCount: 1,
+        isSubscribed: 1
+      }
+    }
+   ]);
+  
+  if(!channel?.length){
+    return res.status(400).json(new APIError("You are logged out"))
+  }
+  return res.status(200).json(new APIResponse(200, channel[0], "Get user details Successfully"))
+})
+
+const handleGetUserWatchHistory = asyncHandler( async (req , res)=>{
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id : new mongoose.Types.ObjectId(req.user._id)
+      }
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullname: 1,
+                    username: 1,
+                    avatar: 1
+                  }
+                },
+                {
+                  $addFields: {
+                    owner: "$owner"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+      fullname: 1,
+      watchHistory: 1,
+      }
+    }
+  ])
+  
+  return res.status(200).json(new APIResponse(200 , user[0] , "Watch History fetched successfully"))
+})
 module.exports = {
   handleRegisterUser,
   handleLoginUser,
@@ -256,4 +372,7 @@ module.exports = {
   handleGetCurrentUser,
   handleChangeUserDetails,
   handleUpdatedAvatar,
+  handleUpdatedCoverImage,
+  handleGetUserProfileDetails,
+  handleGetUserWatchHistory,
 };
