@@ -14,7 +14,7 @@ const uploadOnCloudinary = async (localFilePath) => {
       public_id: `${localFilePath.toString().slice(-6)}`,
       resource_type: "auto",
     });
-    fs.unlinkSync(localFilePath);
+    // fs.unlinkSync(localFilePath);
     return cloudinaryFileData;
   } catch (error) {
     console.log("Error in File upload", error);

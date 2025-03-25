@@ -104,8 +104,8 @@ const handleLoginUser = asyncHandler(async (req, res) => {
 
 const handleLogoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, {
-    $set: {
-      refreshToken: undefined,
+    $unset: { // removes the given fields
+      refreshToken: 1
     },
   });
   const options = {
@@ -363,6 +363,7 @@ const handleGetUserWatchHistory = asyncHandler( async (req , res)=>{
   
   return res.status(200).json(new APIResponse(200 , user[0] , "Watch History fetched successfully"))
 })
+
 module.exports = {
   handleRegisterUser,
   handleLoginUser,
