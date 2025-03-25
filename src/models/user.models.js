@@ -46,6 +46,18 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    isSubscribed : {
+      type : Boolean,
+      default : false
+    },
+    subscribersCount: {
+      type: Number,
+      default: 0
+    },
+    subscribedToCount: {
+      type: Number,
+      default: 0
+    }
   },
   { timestamps: true }
 );

@@ -4,7 +4,7 @@ const app = express()
 const cookieParser = require('cookie-parser')
 const userRouter = require('./routes/user.routes.js')
 const videoRouter = require("./routes/video.routes.js")
-
+const subscriptionRouter = require("./routes/subscription.routes.js")
 // Middlewares
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))
@@ -18,5 +18,6 @@ app.use(cookieParser())
 // routers
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/subscription", subscriptionRouter);
 
 module.exports = app;

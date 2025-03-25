@@ -310,6 +310,14 @@ const handleGetUserProfileDetails = asyncHandler( async (req , res)=>{
   if(!channel?.length){
     return res.status(400).json(new APIError("You are logged out"))
   }
+  const user = await User.findByIdAndUpdate(req.user._id, {
+    $set: {
+      isSubscribed: channel[0].isSubscribed,
+      subscribersCount: channel[0].subscribersCount,
+      subscribedToCount: channel[0].subscribedToCount,
+    }
+  })
+
   return res.status(200).json(new APIResponse(200, channel[0], "Get user details Successfully"))
 })
 
