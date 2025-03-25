@@ -50,7 +50,7 @@ const handleAddVideoToPlaylist = asyncHandler(async (req, res)=>{
 const handleRemoveVideoFromPlaylist = asyncHandler(async (req, res)=>{
     const { playlistId, videoId } = req.params;
     const playlist = await Playlist.findById(playlistId);
-    playlist.videos.pull(videoId)
+    playlist.videos.pull(videoId) // pull is used to remove the given parameters in mongoose
     await playlist.save()
 
     return res.status(200).json(new APIResponse(200, playlist, "Vidoe removed successfully"))
