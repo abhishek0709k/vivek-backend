@@ -35,7 +35,7 @@ const handleGetUserChannelSubscribers = asyncHandler(async (req, res)=>{
     if(!user){
         return res.status(400).json(new APIError("You are logged out", 400))
     }
-    return res.status(200).json(new APIResponse(200, user.subscribersCount, "Subscribers fetched successfully"))
+    return res.status(200).json(new APIResponse(200, {"SubscibersCount": user.subscribersCount}, "Subscribers fetched successfully"))
 })
 
 const handleGetSubscribedChannels = asyncHandler(async (req, res)=>{
@@ -44,7 +44,7 @@ const handleGetSubscribedChannels = asyncHandler(async (req, res)=>{
     if(!user){
         return res.status(400).json(new APIError("You are logged out", 400))
     }
-    return res.status(200).json(new APIResponse(200, user.subscribedToCount, "Subscribers fetched successfully"))
+    return res.status(200).json(new APIResponse(200, {"SubscribedToCount": user.subscribedToCount}, "Subscribers fetched successfully"))
 })
 module.exports = {
     handleCreateSubscription,
