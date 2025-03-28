@@ -16,6 +16,7 @@ const handleCreateSubscription = asyncHandler(async(req, res)=>{
     })
     return res.status(200).json(new APIResponse(200, newSubscription, "Subscription created Successfully"))
 })
+
 const handleToggleSubscription = asyncHandler(async (req, res)=>{
     const { channelId } = req.params;
     const user = await User.findById(channelId).select("-password -refreshToken")

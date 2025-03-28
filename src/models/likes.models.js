@@ -3,7 +3,7 @@ const { Schema, model } = require("mongoose")
 const likeSchema = new Schema({
     comment: {
         type: Schema.Types.ObjectId,
-        ref: "Comment"
+        ref: "Comment"  
     },
     likedBy: {
         type: Schema.Types.ObjectId,
@@ -15,7 +15,7 @@ const likeSchema = new Schema({
     },
     tweet: {
         type: Schema.Types.ObjectId,
-        ref: "Tweet"
+        ref: "Tweet"    
     }
 }, { timestamps: true })
 
